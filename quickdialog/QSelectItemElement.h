@@ -14,7 +14,7 @@
 @interface QSelectItemElement : QLabelElement
 {
     NSUInteger _index;
-    QSelectSection *_selectSection;
+    __weak QSelectSection *_selectSection;
 }
 
 - (QSelectItemElement *)initWithIndex:(NSUInteger)integer selectSection:(QSelectSection *)section;
