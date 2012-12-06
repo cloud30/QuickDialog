@@ -40,7 +40,7 @@
 @property(nonatomic, retain) NSMutableArray * beforeTemplateElements;
 @property(nonatomic, retain) NSMutableArray * afterTemplateElements;
 
-@property(nonatomic, assign) QRootElement *rootElement;
+@property(nonatomic, weak) QRootElement *rootElement;
 
 @property(nonatomic, readonly) BOOL needsEditing;
 
