@@ -36,7 +36,7 @@
 
 @property(nonatomic) CGFloat height;
 
-@property(nonatomic, assign) QSection *parentSection;
+@property(nonatomic, weak) QSection *parentSection;
 
 @property(nonatomic, retain) NSString *key;
 @property(nonatomic, retain) NSObject *object;
