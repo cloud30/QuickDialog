@@ -30,7 +30,7 @@
 @property (nonatomic, strong) NSString *suffix;
 @property (assign) BOOL hiddenToolbar;
 
-@property(nonatomic, unsafe_unretained) id<QuickDialogEntryElementDelegate> delegate;
+@property(nonatomic, weak) id<QuickDialogEntryElementDelegate> delegate;
 
 @property(nonatomic) UITextAutocapitalizationType autocapitalizationType; // default is UITextAutocapitalizationTypeSentences
 @property(nonatomic) UITextAutocorrectionType autocorrectionType;         // default is UITextAutocorrectionTypeDefault

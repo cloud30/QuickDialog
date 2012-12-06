@@ -15,7 +15,7 @@
 #import <objc/message.h>
 
 @implementation QBooleanElement {
-    __unsafe_unretained QuickDialogController *_controller;
+    __weak QuickDialogController *_controller;
 }
 @synthesize onImage = _onImage;
 @synthesize offImage = _offImage;

@@ -20,7 +20,7 @@
 @interface QElement : NSObject {
 
 @protected
-    __unsafe_unretained QSection *_parentSection;
+    __weak QSection *_parentSection;
     NSString *_key;
     NSString *_bind;
 	

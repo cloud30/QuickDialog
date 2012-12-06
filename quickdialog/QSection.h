@@ -26,7 +26,7 @@
     CGRect _entryPosition;
 
 @private
-    __unsafe_unretained QRootElement *_rootElement;
+    __weak QRootElement *_rootElement;
     UIView *_headerView;
     UIView *_footerView;
 }

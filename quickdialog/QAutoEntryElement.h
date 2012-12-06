@@ -24,7 +24,7 @@
 @property(assign) BOOL hiddenToolbar;
 @property(nonatomic, retain) NSString *lastAutoComplete;
 
-@property(nonatomic, unsafe_unretained) id<QuickDialogEntryElementDelegate> delegate;
+@property(nonatomic, weak) id<QuickDialogEntryElementDelegate> delegate;
 
 @property(nonatomic) UITextAutocapitalizationType autocapitalizationType; // default is UITextAutocapitalizationTypeSentences
 @property(nonatomic) UITextAutocorrectionType autocorrectionType;         // default is UITextAutocorrectionTypeDefault
