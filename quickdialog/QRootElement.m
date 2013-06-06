@@ -13,11 +13,13 @@
 //
 
 #import "QBindingEvaluator.h"
+#import "QRootElement.h"
+#import "QuickDialog.h"
 
 @implementation QRootElement {
 @private
     NSDictionary *_sectionTemplate;
-    void (^_onValueChanged)();
+    QPresentationMode _presentationMode;
 }
 
 
@@ -28,11 +30,14 @@
 @synthesize sectionTemplate = _sectionTemplate;
 @synthesize emptyMessage = _emptyMessage;
 @synthesize onValueChanged = _onValueChanged;
+@synthesize presentationMode = _presentationMode;
+@synthesize preselectedElementIndex = _preselectedElementIndex;
 
 
 - (QRootElement *)init {
     self = [super init];
     return self;
+
 }
 - (void)addSection:(QSection *)section {
     if (_sections==nil)
@@ -40,6 +45,12 @@
 
     [_sections addObject:section];
     section.rootElement = self;
+}
+
++ (QRootElement *)rootForJSON:(NSString *)jsonFileName withObject:(id)object {
+    QRootElement *root = [self rootForJSON:jsonFileName];
+    root.object = object;
+    return root;
 }
 
 - (QSection *)getSectionForIndex:(NSInteger)index {
@@ -50,12 +61,43 @@
     return [_sections count];
 }
 
+- (QSection *)getVisibleSectionForIndex:(NSInteger)index
+{
+    for (QSection * q in _sections)
+    {
+        if (!q.hidden && index-- == 0)
+            return q;
+    }
+    return nil;
+}
+- (NSInteger)visibleNumberOfSections
+{
+    NSUInteger c = 0;
+    for (QSection * q in _sections)
+    {
+        if (!q.hidden)
+            c++;
+    }
+    return c;
+}
+- (NSUInteger)getVisibleIndexForSection: (QSection*)section
+{
+    NSUInteger c = 0;
+    for (QSection * q in _sections)
+    {
+        if (q == section)
+            return c;
+        if (!q.hidden)
+            ++c;
+    }
+    return NSNotFound;
+}
+
 - (UITableViewCell *)getCellForTableView:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller {
     UITableViewCell *cell = [super getCellForTableView:tableView controller:controller];
-    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     cell.selectionStyle = UITableViewCellSelectionStyleBlue;
     if (_title!= nil)
-        cell.textLabel.text = _title;
+        cell.textLabel.text = [NSString stringWithFormat:@"%@", _title];
     return cell;
 }
 
@@ -76,10 +118,10 @@
 }
 
 - (void)fetchValueUsingBindingsIntoObject:(id)obj {
+    [super fetchValueUsingBindingsIntoObject:obj];
     for (QSection *s in _sections){
         [s fetchValueUsingBindingsIntoObject:obj];
     }
-    [super fetchValueUsingBindingsIntoObject:obj];
 }
 
 - (void)bindToObject:(id)data {
@@ -123,5 +165,10 @@
         }
     }
     return nil;
+}
+
+- (QRootElement *)rootWithKey:(NSString *)string {
+    return (QRootElement *) [self elementWithKey:string];
+
 }
 @end

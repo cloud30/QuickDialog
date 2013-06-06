@@ -8,7 +8,19 @@
 }
 - (void)setItems:(NSArray *)anItems {
     if (_items != anItems) {
-        _items = anItems;
+        NSMutableArray * n = [NSMutableArray arrayWithCapacity:anItems.count];
+        for (id i in anItems)
+        {
+            UIImage * img = nil;
+            if ([i isKindOfClass:[NSString class]])
+                img = [UIImage imageNamed:i];
+            
+            if (img)
+                [n addObject:img];
+            else
+                [n addObject:i];
+        }
+        _items = n;
     }
 }
 
@@ -30,10 +42,11 @@
 - (void)handleSegmentedControlValueChanged:(id)control {
     _selected = ((UISegmentedControl *)control).selectedSegmentIndex;
     if (self.onValueChanged!=nil)
-        self.onValueChanged();
+        self.onValueChanged(self);
 
     [self handleElementSelected:_controller];
 }
+
 
 - (UITableViewCell *)getCellForTableView:(QuickDialogTableView *)tableView controller:(QuickDialogController *)controller {
     _controller = controller;
@@ -41,15 +54,14 @@
     cell.backgroundView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, 0)];
     cell.backgroundColor = [UIColor clearColor];
     UISegmentedControl *control = [[UISegmentedControl alloc] initWithItems:_items];
-    [control addTarget:self action:@selector(handleSegmentedControlValueChanged:)   forControlEvents:UIControlEventValueChanged];
-    const BOOL isPhone = [UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone;
-    control.frame = CGRectMake(isPhone ? 9 : 30, 0, isPhone ? 302 : 260, self.height);
-    control.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+    [control addTarget:self action:@selector(handleSegmentedControlValueChanged:) forControlEvents:UIControlEventValueChanged];
+    control.frame = cell.contentView.bounds;
+    control.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     control.segmentedControlStyle = UISegmentedControlStyleBar;
     control.selectedSegmentIndex = _selected;
     control.tag = 4321;
-
-    [cell addSubview:control];
+    
+    [cell.contentView addSubview:control];
     return cell;
 }
 

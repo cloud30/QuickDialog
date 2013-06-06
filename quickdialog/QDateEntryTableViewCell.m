@@ -15,6 +15,7 @@
 #import "QEntryTableViewCell.h"
 #import "QDateEntryTableViewCell.h"
 #import "QDateTimeInlineElement.h"
+#import "QTextField.h"
 
 UIDatePicker *QDATEENTRY_GLOBAL_PICKER;
 
@@ -43,22 +44,26 @@ UIDatePicker *QDATEENTRY_GLOBAL_PICKER;
     self.selected = NO;
     [_pickerView removeTarget:self action:@selector(dateChanged:) forControlEvents:UIControlEventValueChanged];
     _pickerView = nil;
-
 }
 
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
     QDateTimeInlineElement *const element = ((QDateTimeInlineElement *) _entryElement);
 
     _pickerView = [QDateEntryTableViewCell getPickerForDate];
+    _pickerView.timeZone = [NSTimeZone localTimeZone];
     [_pickerView sizeToFit];
-    _textField.inputView = _pickerView;
     [_pickerView addTarget:self action:@selector(dateChanged:) forControlEvents:UIControlEventValueChanged];
     _pickerView.datePickerMode = element.mode;
     _pickerView.maximumDate = element.maximumDate;
     _pickerView.minimumDate = element.minimumDate;
-    if (element.dateValue!=nil)
-        _pickerView.date = element.dateValue;
+    _pickerView.minuteInterval = element.minuteInterval;
 
+    if (element.mode != UIDatePickerModeCountDownTimer && element.dateValue != nil)
+        _pickerView.date = element.dateValue;
+    else if (element.mode == UIDatePickerModeCountDownTimer && element.ticksValue != nil)
+        _pickerView.countDownDuration = [element.ticksValue doubleValue];
+
+    _textField.inputView = _pickerView;
     [super textFieldDidBeginEditing:textField];
     self.selected = YES;
 }
@@ -71,7 +76,7 @@ UIDatePicker *QDATEENTRY_GLOBAL_PICKER;
     self.centeredLabel.textColor = [UIColor colorWithRed:0.243 green:0.306 blue:0.435 alpha:1.0];
     self.centeredLabel.highlightedTextColor = [UIColor whiteColor];
     self.centeredLabel.font = [UIFont systemFontOfSize:17];
-    self.centeredLabel.textAlignment = UITextAlignmentCenter;
+    self.centeredLabel.textAlignment = NSTextAlignmentCenter;
 	self.centeredLabel.backgroundColor = [UIColor clearColor];
     self.centeredLabel.frame = CGRectMake(10, 10, self.contentView.frame.size.width-20, self.contentView.frame.size.height-20);
     [self.contentView addSubview:self.centeredLabel];
@@ -79,10 +84,14 @@ UIDatePicker *QDATEENTRY_GLOBAL_PICKER;
 
 - (void) dateChanged:(id)sender{
     QDateTimeInlineElement *const element = ((QDateTimeInlineElement *) _entryElement);
-    element.dateValue = _pickerView.date;
+    if (element.mode == UIDatePickerModeCountDownTimer){
+        element.ticksValue = [NSNumber numberWithDouble:_pickerView.countDownDuration];
+    } else {
+        element.dateValue = _pickerView.date;
+    }
     [self prepareForElement:_entryElement inTableView:_quickformTableView];
     if (element.onValueChanged!=nil)
-        element.onValueChanged();
+        element.onValueChanged(_entryElement);
 
 }
 
@@ -109,27 +118,45 @@ UIDatePicker *QDATEENTRY_GLOBAL_PICKER;
                 [dateFormatter setDateStyle:NSDateFormatterMediumStyle];
                 [dateFormatter setTimeStyle:NSDateFormatterShortStyle];
                 break;
-            case UIDatePickerModeCountDownTimer:
-                [dateFormatter setDateStyle:NSDateFormatterMediumStyle];
-                [dateFormatter setTimeStyle:NSDateFormatterShortStyle];
-                break;
+			case UIDatePickerModeCountDownTimer:
+				break;
         }
     }
 
+    NSString *value = dateElement.mode!=UIDatePickerModeCountDownTimer
+            ? [dateFormatter stringFromDate:dateElement.dateValue]
+            : [self formatInterval:dateElement.ticksValue.doubleValue];
     if (!dateElement.centerLabel){
 		self.textLabel.text = element.title;
         self.centeredLabel.text = nil;
-		self.detailTextLabel.text = [dateFormatter stringFromDate:dateElement.dateValue];
+		self.detailTextLabel.text = value;
 		
     } else {
         self.textLabel.text = nil;
-		self.centeredLabel.text = [dateFormatter stringFromDate:dateElement.dateValue];
+		self.centeredLabel.text = value;
     }
 
-	_textField.text = [dateFormatter stringFromDate:dateElement.dateValue];
+	_textField.text = value;
     _textField.placeholder = dateElement.placeholder;
 
     _textField.inputAccessoryView.hidden = dateElement.hiddenToolbar;
+}
+
+- (NSString *) formatInterval: (NSTimeInterval) interval
+{
+    unsigned long seconds = (unsigned long) interval;
+    unsigned long minutes = seconds / 60;
+    unsigned long hours = minutes / 60;
+    minutes %= 60;
+
+    NSMutableString * result = [NSMutableString new];
+    if(hours)
+     [result appendFormat:@"%d hrs, ", (int) hours];
+
+    [result appendFormat:@"%d mins", (int) minutes];
+    //[result appendFormat:@"%d", (int) seconds];
+
+    return result;
 }
 
 @end

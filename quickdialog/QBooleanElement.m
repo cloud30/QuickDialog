@@ -14,13 +14,15 @@
 
 #import <objc/message.h>
 
+#import "QBooleanElement.h"
+#import "QuickDialogController.h"
+
 @implementation QBooleanElement {
     __weak QuickDialogController *_controller;
 }
 @synthesize onImage = _onImage;
 @synthesize offImage = _offImage;
 @synthesize boolValue = _boolValue;
-@synthesize enabled = _enabled;
 
 
 - (QBooleanElement *)init {
@@ -33,6 +35,14 @@
     self.boolValue = value;
     self.enabled = YES;
     return self;
+}
+
+-(void)setNumberValue:(NSNumber *)number {
+    self.boolValue = number.boolValue;
+}
+
+-(NSNumber *)numberValue {
+    return [NSNumber numberWithBool:self.boolValue];
 }
 
 - (void)setOnImageName:(NSString *)name {
@@ -97,6 +107,13 @@
     }
 }
 
+-(void)setBoolValue:(BOOL)boolValue {
+    _boolValue = boolValue;
+    if (self.onValueChanged!=nil){
+        self.onValueChanged(self);
+    }
+}
+
 - (void)switched:(id)boolSwitch {
     self.boolValue = ((UISwitch *)boolSwitch).on;
     if ((_controller != nil && self.controllerAction != nil) || _onSelected != nil) {
@@ -109,6 +126,18 @@
 		return;
     [obj setValue:[NSNumber numberWithBool:self.boolValue] forKey:_key];
 }
+
+
+- (void)setNilValueForKey:(NSString *)key;
+{
+    if ([key isEqualToString:@"boolValue"]){
+        self.boolValue = NO;
+    }
+    else {
+        [super setNilValueForKey:key];
+    }
+}
+
 
 
 @end
